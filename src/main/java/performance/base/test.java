@@ -1,14 +1,18 @@
 package performance.base;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONObject;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import performance.Reporting.MethodMeta;
 import performance.SdkAndroid.All;
 import performance.utility.AndroidLogs;
 import performance.utility.ApiCore;
+import performance.utility.DeviceDetails;
 
 public class test extends core {
 
@@ -17,6 +21,7 @@ public class test extends core {
       return null;
     }
   };
+  public Map<String, Object> deviceSpecs = new HashMap<>();
 
   public void init(String packageName, String deviceId){
     All all = new All(packageName, deviceId, sDeviceDetails);
@@ -24,6 +29,12 @@ public class test extends core {
     thread.setName("Thread:" + packageName);
     thread.start();
     sThread.set(all);
+  }
+
+  @BeforeMethod
+  public void initialize() throws Exception {
+    deviceSpecs = new DeviceDetails().getDeviceHardwareDetails("emulator-5554");
+
   }
 
   @Test
@@ -40,7 +51,7 @@ public class test extends core {
       jsonObjects = new MethodMeta().build(sDeviceDetails);
       System.out.println("size :" + sDeviceDetails.size());
       System.out.println("Pushing Data to ES");
-      new ApiCore().post(jsonObjects);
+      new ApiCore(deviceSpecs).post(jsonObjects);
     }
   }
 
@@ -49,7 +60,7 @@ public class test extends core {
     List<String> packages = AndroidLogs.getInstance().getAdbShell("pm list packages", deviceId);
     String output = "None";
     for (String s : packages){
-      if (s.contains("com")){
+      if (s.contains("com.google.android.youtube") || s.contains("com.android.vending")){
         System.out.println("Package: " + s);
         init(s.split("package:")[1], deviceId);
         String monkeyCommand = "shell monkey -p " + s.split("package:")[1] + " "
@@ -57,7 +68,7 @@ public class test extends core {
             + "--ignore-native-crashes "
             + "--ignore-timeouts "
             + "-v "
-            + "--throttle 2000 50";
+            + "--throttle 2000 25";
         System.out.println(monkeyCommand);
         output = AndroidLogs.getInstance().globalAdb(monkeyCommand, deviceId);
 

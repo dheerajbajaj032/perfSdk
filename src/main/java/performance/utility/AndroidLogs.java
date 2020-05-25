@@ -183,7 +183,7 @@ public class AndroidLogs {
   public String globalAdb(String command, String deviceId) throws InterruptedException {
     String adbCommand = AndroidConstants.ADB_PATH + " -s " + deviceId + " " + command;
     System.out.println(adbCommand);
-    Object[] obj = runtimeCommand(adbCommand, 1, false, true, 60 * 1000);
+    Object[] obj = runtimeCommand(adbCommand, 1, false, true, 1800 * 1000);
     String output = (String) obj[0];
     return output;
   }

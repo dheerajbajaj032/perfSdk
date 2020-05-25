@@ -1,0 +1,7 @@
+<suite name="PerfFramework">
+  <test name="Test">
+    <classes>
+      <class name="performance.base.test" />
+    </classes>
+  </test>
+</suite>

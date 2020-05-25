@@ -2,10 +2,13 @@ package performance.base;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONObject;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
+import performance.Reporting.MethodMeta;
 import performance.SdkAndroid.All;
 import performance.utility.AndroidLogs;
+import performance.utility.ApiCore;
 
 public class test extends core {
 
@@ -16,7 +19,7 @@ public class test extends core {
   };
 
   public void init(String packageName, String deviceId){
-    All all = new All(packageName, deviceId);
+    All all = new All(packageName, deviceId, sDeviceDetails);
     Thread thread = new Thread(all);
     thread.setName("Thread:" + packageName);
     thread.start();
@@ -29,10 +32,15 @@ public class test extends core {
   }
 
   @AfterMethod
-  public void afterMethod() {
+  public void afterMethod() throws InterruptedException {
+    List<JSONObject> jsonObjects = new ArrayList<>();
     if (sThread.get() != null) {
       All all = sThread.get();
       all.stop();
+      jsonObjects = new MethodMeta().build(sDeviceDetails);
+      System.out.println("size :" + sDeviceDetails.size());
+      System.out.println("Pushing Data to ES");
+      new ApiCore().post(jsonObjects);
     }
   }
 
@@ -41,7 +49,7 @@ public class test extends core {
     List<String> packages = AndroidLogs.getInstance().getAdbShell("pm list packages", deviceId);
     String output = "None";
     for (String s : packages){
-      if (s.contains("com.google.android.youtube")){
+      if (s.contains("com")){
         System.out.println("Package: " + s);
         init(s.split("package:")[1], deviceId);
         String monkeyCommand = "shell monkey -p " + s.split("package:")[1] + " "
@@ -57,9 +65,5 @@ public class test extends core {
     }
     System.out.println(filteredPackages);
   }
-
-//  public static void main(String[] args) throws InterruptedException {
-//    new performance.base.test().deviceTest("emulator-5554");
-//  }
 
 }

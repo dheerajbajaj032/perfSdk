@@ -1,15 +1,14 @@
 package performance.base;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 
 public class core {
 
-  public ThreadLocal<Map<String, Object>> sTestDetails = new ThreadLocal<Map<String, Object>>(){
-    @Override protected Map<String, Object> initialValue() {
-      return null;
-    }
-  };
+  public List<JSONObject> sDeviceDetails = new ArrayList<>();
 
   public Map<String, Object> meta = new HashMap<>();
 

@@ -83,7 +83,7 @@ public class test extends core {
       System.out.println("size :" + sDeviceDetails.size());
       System.out.println("Pushing Data to ES");
       // TODO: 25/05/20 disabled temperaroly 
-      //new ApiCore(deviceSpecs).post(jsonObjects);
+      new ApiCore(deviceSpecs).post(jsonObjects);
     }
       File logFile = new File((String) meta.get("logsFilePath"));
       if (logFile.exists()){
@@ -98,7 +98,7 @@ public class test extends core {
           myReader.close();
           System.out.println(new logUtil().getActivityLoadTime(displayedLogs));
           // TODO: 25/05/20 post android load time to es 
-          //apiCore.post(new logUtil().getActivityLoadTime(displayedLogs));
+          apiCore.postLoadTime(new logUtil().getActivityLoadTime(displayedLogs));
         } catch (FileNotFoundException e) {
           System.out.println("An error occurred.");
           e.printStackTrace();

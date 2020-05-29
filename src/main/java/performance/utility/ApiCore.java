@@ -7,7 +7,6 @@ import io.restassured.http.ContentType;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
-import performance.base.test;
 
 public class ApiCore {
 
@@ -32,5 +31,17 @@ public class ApiCore {
         body(jsonObject.toString()).post("/api/v1/results/deviceMeta")
         .then().extract().response().getBody().prettyPrint();
     }
-}
+
+  public void postLoadTime(List<JSONObject> jsonObjects) throws InterruptedException {
+      System.out.println(pushLoadTime(jsonObjects));
+  }
+
+  private String pushLoadTime(List<JSONObject> jsonObjects) {
+    System.out.println(jsonObjects);
+    RestAssured.baseURI = "http://localhost:8083";
+    return  given().when().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).
+        body(jsonObjects.toString()).post("/api/v1/loadtime")
+        .then().extract().response().getBody().prettyPrint();
+    }
+  }
 

@@ -9,7 +9,7 @@ public class DeviceDetails {
 
   public Map<String, Object> getDeviceHardwareDetails(String deviceId) throws Exception {
 
-    List<String> key_value = Arrays.asList(new reader().getConfigValue("deviceDetails").split(","));
+    List<String> key_value = Arrays.asList(new Reader().getConfigValue("deviceDetails").split(","));
     Map<String,Object> detailsMap = new HashMap<>();
     Map<String,Object> getPropMap = new HashMap<>();
     List<String> storageResult = AndroidLogs.getInstance().getAdbShell("getprop", deviceId);

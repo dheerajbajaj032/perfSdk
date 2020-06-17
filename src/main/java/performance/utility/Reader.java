@@ -6,11 +6,11 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class reader {
+public class Reader {
 
   List<String> keysList = new ArrayList<>();
 
-  public reader() throws Exception {
+  public Reader() throws Exception {
     loadConfig();
   }
 

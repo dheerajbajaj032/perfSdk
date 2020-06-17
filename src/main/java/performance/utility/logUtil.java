@@ -11,8 +11,9 @@ import performance.constants.AndroidConstants;
 
 public class logUtil {
 
-  public List<JSONObject> getActivityLoadTime(List<String> loadTime) {
+  public JSONObject getActivityLoadTime(List<String> loadTime) {
     List<JSONObject> appLoadTimeObj = new ArrayList<>();
+    JSONObject object = new JSONObject();
     Map<String, Object> activityTimeMap = null;
     if (!loadTime.isEmpty()) {
       for (String line : loadTime) {
@@ -30,7 +31,22 @@ public class logUtil {
         appLoadTimeObj.add(new JSONObject(activityTimeMap));
       }
     }
-    return appLoadTimeObj;
+    object.put("loadtimes", appLoadTimeObj);
+    return object;
+  }
+
+  public JSONObject getErrorLogs(List<String> logs) {
+    JSONObject object = new JSONObject();
+    List<String> logsList = new ArrayList<>();
+    if (!logs.isEmpty()) {
+      for (String line : logs) {
+        if (line.contains("exception")){
+          logsList.add(line);
+        }
+        object.put("exception", logsList);
+      }
+    }
+    return object;
   }
 
 }

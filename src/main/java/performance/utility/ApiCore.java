@@ -57,5 +57,17 @@ public class ApiCore {
         body(jsonObject.toString()).post("/api/v1/error")
         .then().extract().response().getBody().prettyPrint();
   }
+
+  public void postMemoryDiff(JSONObject jsonObjects) throws InterruptedException {
+    System.out.println(pushMemoryDiff(jsonObjects));
+  }
+
+  private String pushMemoryDiff(JSONObject jsonObject) {
+    System.out.println(jsonObject);
+    RestAssured.baseURI = baseURL;
+    return  given().when().headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON).
+        body(jsonObject.toString()).post("/api/v1/memory/diff")
+        .then().extract().response().getBody().prettyPrint();
+  }
   }
 

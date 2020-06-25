@@ -39,6 +39,7 @@ public class test extends core {
     }
   };
   public Map<String, Object> deviceSpecs = new HashMap<>();
+  Map<String,Integer> memInfoStartMap = new HashMap<>();
 
   public void init(String packageName, String deviceId) {
     All all = new All(packageName, deviceId, sDeviceDetails);
@@ -64,6 +65,14 @@ public class test extends core {
       System.out.println("Logs File created: " + logsFile.getPath());
       meta.put("logsFilePath", logsFile.getPath());
       meta.put("logsDirectoryPath", logsDirectory.getPath());
+      String command = "shell cat /proc/meminfo";
+      String memInfoStart  = AndroidLogs.getInstance().globalAdb(command, "emulator-5554");
+      List<String> memInfoStartList = Arrays.asList(memInfoStart.split("\n"));
+      memInfoStartMap = new HashMap<>();
+      for (String stat : memInfoStartList){
+        memInfoStartMap.put(stat.split(":")[0],
+            Integer.parseInt(stat.split(":")[1].trim().replaceAll("kB","").trim()));
+      }
       Logcat logcat = new Logcat("emulator-5554", meta);
       Thread thread = new Thread(logcat);
       thread.start();
@@ -91,6 +100,21 @@ public class test extends core {
       // TODO: 25/05/20 disabled temperaroly 
       new ApiCore(deviceSpecs).post(jsonObjects);
     }
+    String command = "shell cat /proc/meminfo";
+    String memInfoEnd  = AndroidLogs.getInstance().globalAdb(command, "emulator-5554");
+    List<String> memInfoStartList = Arrays.asList(memInfoEnd.split("\n"));
+    Map<String,Integer> memInfoEndMap = new HashMap<>();
+    for (String stat : memInfoStartList){
+      memInfoEndMap.put(stat.split(":")[0],
+          Integer.parseInt(stat.split(":")[1].trim().replaceAll("kB","").trim()));
+    }
+    Map<String,Integer> memInfoDiffMap = new HashMap<>();
+    JSONObject memInfoDiffObj = new JSONObject();
+    for (String stat : memInfoStartMap.keySet()){
+        memInfoDiffMap.put(stat, memInfoEndMap.get(stat) - memInfoStartMap.get(stat));
+    }
+    memInfoDiffObj.put("memoryDiff", memInfoDiffMap);
+    System.out.println(memInfoDiffMap);
     File logFile = new File((String) meta.get("logsFilePath"));
     if (logFile.exists()) {
       try {
@@ -109,6 +133,7 @@ public class test extends core {
         logUtil logUtil = new logUtil();
         apiCore.postLoadTime(logUtil.getActivityLoadTime(displayedLogs));
         apiCore.postErrorLogs(logUtil.getErrorLogs(errorLogs));
+        apiCore.postMemoryDiff(memInfoDiffObj);
       } catch (FileNotFoundException e) {
         System.out.println("An error occurred.");
         e.printStackTrace();

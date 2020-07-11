@@ -17,7 +17,12 @@ public class Reader {
   public String getConfigValue(String arg){
     for (String key : keysList){
       if (key.contains(arg.toLowerCase())){
-        return key.split("=")[1];
+        try{
+          return key.split("=")[1];
+        }
+        catch (Exception e){
+          return "";
+        }
       }
     }
     return "";

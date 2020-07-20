@@ -15,7 +15,9 @@ public class ApiCore {
 
   public ApiCore(Map<String, Object> deviceSpecs) throws Exception {
     this.deviceSpecs = deviceSpecs;
-    baseURL = new Reader().getConfigValue("restapi");
+    baseURL = System.getProperty("restApiAddress");
+    if (baseURL == null || baseURL.isEmpty()){
+        baseURL = new Reader().getConfigValue("restapi");}
   }
 
   public void post(List<JSONObject> jsonObjects) throws InterruptedException {

@@ -14,6 +14,7 @@ import java.util.Scanner;
 import org.json.JSONObject;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import performance.Reporting.MethodMeta;
 import performance.SdkAndroid.All;
@@ -41,6 +42,11 @@ public class testPerf extends core {
   };
   public Map<String, Object> deviceSpecs = new HashMap<>();
   Map<String,Integer> memInfoStartMap = new HashMap<>();
+  public String deviceId = "";
+  public String throttle = "";
+  public String event = "";
+  public String pNames = "";
+
 
   public void init(String packageName, String deviceId) {
     All all = new All(packageName, deviceId, sDeviceDetails);
@@ -50,9 +56,25 @@ public class testPerf extends core {
     sThread.set(all);
   }
 
+  @BeforeSuite
+  public void config() throws Exception {
+    deviceId = System.getProperty("device");
+    throttle = System.getProperty("throttle");
+    event = System.getProperty("event");
+    Reader reader = new Reader();
+    pNames = reader.getConfigValue("packagelist");
+    if (throttle == null || throttle.isEmpty()) {
+      throttle = reader.getConfigValue("throttletime");
+    }
+    if (event == null || event.isEmpty()) {
+      event = reader.getConfigValue("eventcount");
+    }
+  }
+
   @BeforeMethod
   public void initialize() throws Exception {
-    deviceSpecs = new DeviceDetails().getDeviceHardwareDetails("emulator-5554");
+
+    deviceSpecs = new DeviceDetails().getDeviceHardwareDetails(deviceId);
     File logsDirectory = new File(
         System.getProperty("user.dir") + "/src/main/java/performance/report");
       LocalDateTime date = LocalDateTime.now();
@@ -66,14 +88,14 @@ public class testPerf extends core {
       meta.put("logsFilePath", logsFile.getPath());
       meta.put("logsDirectoryPath", logsDirectory.getPath());
       String command = "shell cat /proc/meminfo";
-      String memInfoStart  = AndroidLogs.getInstance().globalAdb(command, "emulator-5554");
+      String memInfoStart  = AndroidLogs.getInstance().globalAdb(command, deviceId);
       List<String> memInfoStartList = Arrays.asList(memInfoStart.split("\n"));
       memInfoStartMap = new HashMap<>();
       for (String stat : memInfoStartList){
         memInfoStartMap.put(stat.split(":")[0],
             Integer.parseInt(stat.split(":")[1].trim().replaceAll("kB","").trim()));
       }
-      Logcat logcat = new Logcat("emulator-5554", meta);
+      Logcat logcat = new Logcat(deviceId, meta);
       Thread thread = new Thread(logcat);
       thread.start();
       sLogs.set(logcat);
@@ -81,7 +103,7 @@ public class testPerf extends core {
 
   @Test
   public void test() throws Exception {
-    deviceTest("emulator-5554");
+    deviceTest(deviceId);
   }
 
   @AfterMethod
@@ -100,7 +122,7 @@ public class testPerf extends core {
       new ApiCore(deviceSpecs).post(jsonObjects);
     }
     String command = "shell cat /proc/meminfo";
-    String memInfoEnd  = AndroidLogs.getInstance().globalAdb(command, "emulator-5554");
+    String memInfoEnd  = AndroidLogs.getInstance().globalAdb(command, deviceId);
     List<String> memInfoStartList = Arrays.asList(memInfoEnd.split("\n"));
     Map<String,Integer> memInfoEndMap = new HashMap<>();
     for (String stat : memInfoStartList){
@@ -144,8 +166,6 @@ public class testPerf extends core {
     List<String> filteredPackages = new ArrayList<>();
     List<String> packages = AndroidLogs.getInstance().getAdbShell("pm list packages", deviceId);
     String output = "None";
-    Reader reader = new Reader();
-    String pNames = reader.getConfigValue("packagelist");
     if (!pNames.isEmpty()) {
       List<String> packagesToTest = Arrays.asList(pNames.split(","));
       if (!packagesToTest.isEmpty()) { packages = packagesToTest; }
@@ -162,8 +182,8 @@ public class testPerf extends core {
           + "--ignore-timeouts "
           + "-v "
           + "--throttle "
-          + reader.getConfigValue("throttletime")
-          + " " + reader.getConfigValue("eventcount");
+          + throttle
+          + " " + event;
       System.out.println(monkeyCommand);
       output = AndroidLogs.getInstance().globalAdb(monkeyCommand, deviceId);
       filteredPackages.add(s);

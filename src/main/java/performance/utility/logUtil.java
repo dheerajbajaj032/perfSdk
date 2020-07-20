@@ -27,7 +27,7 @@ public class logUtil {
           if (!tmp.contains(".")){
             tmp = String.valueOf(Double.parseDouble(tmp)/1000);
           }
-          activityTimeMap.put("time", tmp);
+          activityTimeMap.put("time", Float.parseFloat(tmp));
         appLoadTimeObj.add(new JSONObject(activityTimeMap));
       }
     }

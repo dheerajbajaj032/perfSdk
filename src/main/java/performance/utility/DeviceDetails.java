@@ -14,10 +14,18 @@ public class DeviceDetails {
     Map<String,Object> getPropMap = new HashMap<>();
     List<String> storageResult = AndroidLogs.getInstance().getAdbShell("getprop", deviceId);
     for (String key : storageResult){
-      getPropMap.put(
-          key.split(": ")[0].replaceAll("\\[", "").replaceAll("\\]",""),
-          key.split(": ")[1].replaceAll("\\[", "").replaceAll("\\]",""));
-    }
+      try {
+        if (key.contains(":")) {
+          getPropMap.put(
+              key.split(": ")[0].replaceAll("\\[", "").replaceAll("\\]", ""),
+              key.split(": ")[1].replaceAll("\\[", "").replaceAll("\\]", ""));
+        }
+      }
+      catch (Exception e){
+        System.out.println(e);
+      }
+      }
+
     for (String key : key_value){
       if (getPropMap.containsKey(key)){
         detailsMap.put(key,getPropMap.get(key));
